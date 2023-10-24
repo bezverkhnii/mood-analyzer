@@ -7,14 +7,16 @@ import { getProfile } from "@/utils/getProfile";
 import { generateRandomString } from "@/utils/generateRandomString";
 import { useRouter } from "next/navigation";
 import { getAllGenres } from "@/utils/getAllGenres";
+import { getTopArtists } from "@/utils/getTopArtists";
 
 export default function Home() {
   const [mood, setMood] = useState("");
   const [genres, setGenres] = useState([]);
+  const [topArtists, setTopArtists] = useState([]);
   const router = useRouter();
   let profile = getUserData();
   console.log(profile);
-  console.log(genres);
+  console.log(topArtists);
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
   const redirectUri = "http://localhost:3000";
 
@@ -58,7 +60,7 @@ export default function Home() {
 
     generateCodeChallenge(codeVerifier).then((codeChallenge) => {
       let state = generateRandomString(16);
-      let scope = "user-read-private user-read-email";
+      let scope = "user-read-private user-top-read user-read-email";
 
       localStorage.setItem("code_verifier", codeVerifier);
 
@@ -114,6 +116,17 @@ export default function Home() {
       });
   };
 
+  const joinGenres = (genreArr) => {
+    let output = "";
+    for (let i = 0; i < genreArr.length; i++) {
+      if (i === genreArr.length - 1) {
+        output += genreArr[i];
+      } else {
+        output += `${genreArr[i]}, `;
+      }
+    }
+    return output;
+  };
   return (
     <main className={styles.main}>
       <nav className={styles.nav}>
@@ -137,7 +150,9 @@ export default function Home() {
           </div>
         )}
       </nav>
-      <h1 className={styles.headText}>Spotify based on your mood</h1>
+      <h1 className={styles.headText}>
+        <span className={styles.limeColor}>Spotify</span> based on your mood
+      </h1>
       <p className={styles.description}>
         Give your emotions a boost with music extension.
       </p>
@@ -153,14 +168,30 @@ export default function Home() {
       </div>
       <button
         onClick={() =>
-          getAllGenres(localStorage.getItem("access_token")).then((data) =>
-            setGenres(data.genres)
-          )
+          getTopArtists(localStorage.getItem("access_token")).then((data) => {
+            setTopArtists(data);
+          })
         }
       >
         get genres
       </button>
-      {genres && genres.map((genre, idx) => <p key={idx}>{genre}</p>)}
+      {topArtists && (
+        <div className={styles.artistsContainer}>
+          <h1>Your Hot-10!</h1>
+          {topArtists.map((artist) => (
+            <div key={artist.id} className={styles.artistInfo}>
+              <Image
+                src={artist.images[0].url}
+                alt="artist"
+                height={160}
+                width={160}
+              />
+              <p>{artist.name}</p>
+              <div>{joinGenres(artist.genres)}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
