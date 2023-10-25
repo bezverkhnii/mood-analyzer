@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export function getTopArtists(accessToken: string) {
+export async function getTopArtists(accessToken: string) {
   const params = {
     time_range: "short_term",
     limit: 10,
