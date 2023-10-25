@@ -8,6 +8,11 @@ import { generateRandomString } from "@/utils/generateRandomString";
 import { useRouter } from "next/navigation";
 import { getAllGenres } from "@/utils/getAllGenres";
 import { getTopArtists } from "@/utils/getTopArtists";
+// import { joinGenres } from "@/utils/joinGenres";
+import { moodButtons } from "@/constants/data";
+import Button from "@/components/Button";
+import { pickTwoMoods } from "@/utils/pickTwoMoods";
+import { getRecommendations } from "@/utils/getRecommendations";
 
 export default function Home() {
   const [mood, setMood] = useState("");
@@ -16,31 +21,12 @@ export default function Home() {
   const router = useRouter();
   let profile = getUserData();
   console.log(profile);
+  console.log(mood);
   console.log(topArtists);
   const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
   const redirectUri = "http://localhost:3000";
 
   //input handling
-  const handleSubmit = (e: {
-    preventDefault: () => void;
-    target: { value: SetStateAction<string> };
-  }) => {
-    e.preventDefault();
-    setMood(e.target.value);
-    console.log(mood);
-  };
-
-  const handleInputChange = (e: {
-    target: { value: SetStateAction<string> };
-  }) => {
-    setMood(e.target.value);
-  };
-
-  const handleKeyDown = (e: { key: string }) => {
-    if (e.key === "Enter") {
-      handleSubmit(e);
-    }
-  };
 
   const storeUserData = (userData) => {
     localStorage.setItem("user_data", JSON.stringify(userData));
@@ -116,17 +102,12 @@ export default function Home() {
       });
   };
 
-  const joinGenres = (genreArr) => {
-    let output = "";
-    for (let i = 0; i < genreArr.length; i++) {
-      if (i === genreArr.length - 1) {
-        output += genreArr[i];
-      } else {
-        output += `${genreArr[i]}, `;
-      }
-    }
-    return output;
+  const generateRecs = (token: string, moodArr: string[]) => {
+    let moods = pickTwoMoods(moodArr);
+    console.log(moods);
+    getRecommendations(token, moods);
   };
+
   return (
     <main className={styles.main}>
       <nav className={styles.nav}>
@@ -156,41 +137,48 @@ export default function Home() {
       <p className={styles.description}>
         Give your emotions a boost with music extension.
       </p>
-      <div className={styles.inputContainer}>
-        <input
-          type="text"
-          placeholder="How's your mood today?"
-          value={mood}
-          className={styles.input}
-          onKeyDown={handleKeyDown}
-          onChange={handleInputChange}
-        />
+      <h3>What's your mood for today?</h3>
+      <div className={styles.buttonsContainer}>
+        {Object.keys(moodButtons).map((key) => (
+          <Button
+            key={key}
+            text={moodButtons[key].btn}
+            fn={() =>
+              generateRecs(
+                localStorage.getItem("access_token"),
+                moodButtons[key].genres
+              )
+            }
+          />
+        ))}
       </div>
-      <button
-        onClick={() =>
-          getTopArtists(localStorage.getItem("access_token")).then((data) => {
-            setTopArtists(data);
-          })
-        }
-      >
-        get genres
-      </button>
-      {topArtists && (
+      {topArtists.length ? (
         <div className={styles.artistsContainer}>
-          <h1>Your Hot-10!</h1>
-          {topArtists.map((artist) => (
-            <div key={artist.id} className={styles.artistInfo}>
-              <Image
-                src={artist.images[0].url}
-                alt="artist"
-                height={160}
-                width={160}
-              />
-              <p>{artist.name}</p>
-              <div>{joinGenres(artist.genres)}</div>
+          {topArtists.map((artist, idx) => (
+            <div key={artist.id} className={styles.topArtistsContainer}>
+              <div className={styles.place}>{idx + 1}.</div>
+              <div className={styles.artistInfo}>
+                <Image
+                  src={artist.images[0].url}
+                  alt="artist"
+                  height={160}
+                  width={160}
+                />
+                <p className={styles.artistName}>{artist.name}</p>
+              </div>
             </div>
           ))}
         </div>
+      ) : (
+        <button
+          onClick={() =>
+            getTopArtists(localStorage.getItem("access_token")).then((data) => {
+              setTopArtists(data);
+            })
+          }
+        >
+          Wrap your 10 Top Artists!
+        </button>
       )}
     </main>
   );

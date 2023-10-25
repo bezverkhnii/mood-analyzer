@@ -1,14 +1,19 @@
-export async function getRecommendations(accessToken: string) {
+import axios from "axios";
 
-  const response = await fetch(
-    `https://api.spotify.com/v1/recommendations?seed_genres=${}%2${}`,
-    {
-      headers: {
-        Authorization: "Bearer " + accessToken,
-      },
-    }
-  );
-
-  const data = await response.json();
-  return data;
+export async function getRecommendations(accessToken: string, moods: string[]) {
+  return axios
+    .get(
+      `https://api.spotify.com/v1/recommendations?limit=5&seed_genres=${moods[0]}%2C${moods[1]}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      throw new Error("Error fetching recommendations: " + err.message);
+    });
 }

@@ -51,13 +51,15 @@
   color: rgb(191, 255, 15);
 }
 
-.input {
-  height: 2rem;
-  width: 400px;
-  border-radius: 10px;
-  border: 1px solid rgb(209, 209, 209);
-  padding-left: 10px;
-  font-size: 16px;
+.buttonsContainer {
+  display: flex;
+  justify-content: center;
+  max-width: 500px;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.button {
 }
 
 .artistsContainer {
@@ -66,6 +68,18 @@
   flex-direction: column;
   flex-wrap: wrap;
   gap: 30px;
+}
+
+.topArtistsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.place {
+  font-size: 40px;
+  font-weight: bold;
 }
 
 .artistInfo {
